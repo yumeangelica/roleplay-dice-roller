@@ -1,0 +1,3 @@
+# Roleplay Dice Roller
+
+An original Vanilla JavaScript dice roller project developed in 2020. This repository hosts a simple yet functional dice roller designed specifically for roleplaying games. The application allows users to add dice, roll them, and calculate the totals, all through a user-friendly interface. Developed using pure JavaScript, CSS, and HTML, this project showcases foundational web development techniques without the reliance on modern frameworks or libraries.
