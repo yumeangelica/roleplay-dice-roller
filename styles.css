@@ -190,11 +190,16 @@ input, button {
   display: none;
 }
 
+.counterDisplayContainer {
+  text-align: center;
+  margin-bottom: 10px;
+}
+
 #currentRoundDisplay, #totalSumDisplay {
   /* Initially hide displays */
   display: none;
   text-align: center;
-  margin: 20px 0px 5px 0px;
+  margin: 10px;
 }
 
 #totalSumDisplay {
