@@ -18,6 +18,7 @@ const addDice = () => {
   document.getElementById('addButton').style.display = 'none';
   showSecondDice = true;
   document.getElementById('totalSumDisplay').style.display = 'block';
+  document.getElementById('secondDiceInputLabel').style.display = 'block';
   document.getElementById('secondDiceInput').focus();
 };
 
@@ -31,6 +32,7 @@ const subDice = () => {
   document.getElementById('secondDiceInputContainer').style.display = 'none';
   showSecondDice = false;
   document.getElementById('totalSumDisplay').style.display = 'none';
+  document.getElementById('secondDiceInputLabel').style.display = 'none';
   document.getElementById('firstDiceInput').focus();
 };
 
@@ -39,7 +41,9 @@ const rollDice = () => {
   let n1 = document.getElementById('firstDiceInput').value.trim();
   let n2 = document.getElementById('secondDiceInput').value.trim();
 
+
   if (validateInput(n1, n2)) {  // Only proceed if the input is valid
+    document.getElementById('currentRoundDisplay').style.display = 'block';
     calculateAndDisplayResults(n1, n2);
   }
 };
@@ -95,7 +99,9 @@ const resetInputTwo = () => {
 
 // Reset function to reload the page
 const reset = () => {
-  location.reload();
+  if (confirm('Are you sure you want to reset?')) {
+    location.reload();
+  }
 };
 
 // Event listeners for enter key
