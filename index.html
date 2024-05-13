@@ -17,7 +17,8 @@
     <div class="container">
 
       <h1>Roleplay dice roller</h1>
-      <div class="source-code-link-container"><a href="#" target="_blank" class="source-code-link">Source Code</a></div>
+      <div class="source-code-link-container"><a href="https://github.com/yumeangelica/roleplay-dice-roller" target="_blank"
+          class="source-code-link">Source Code</a></div>
 
       <div class="container dice-display-container">
         <div class="row">
@@ -29,16 +30,17 @@
       <div class="container dice-input-container">
         <div class="row">
           <div class="col-xs" id="firstDiceInputContainer">
-            <input type="tel" maxlength="2" placeholder="1-20:" class="dice-input" id="firstDiceInput" aria-label="First dice input for numbers between 1 and 20">
+            <label for="firstDiceInput">Enter sides for Dice 1:</label>
+            <input type="tel" maxlength="2" placeholder="1-20:" class="dice-input" id="firstDiceInput"
+              aria-label="First dice input for numbers between 1 and 20">
           </div>
           <div class="col-xs" id="secondDiceInputContainer">
-            <input type="tel" maxlength="2" placeholder="1-20:" class="dice-input" id="secondDiceInput" aria-label="Second dice input for numbers between 1 and 20">
+            <label for="secondDiceInput" id="secondDiceInputLabel">Enter sides for Dice 2:</label>
+            <input type="tel" maxlength="2" placeholder="1-20:" class="dice-input" id="secondDiceInput"
+              aria-label="Second dice input for numbers between 1 and 20">
           </div>
         </div>
       </div>
-
-      <div id="currentRoundDisplay">Round: </div>
-      <div id="totalSumDisplay">Sum of dices: </div>
 
       <div class="dice-button-container">
         <button id="rollButton" class="btn" onclick="rollDice()">Roll dice</button>
@@ -46,6 +48,10 @@
         <button id="subButton" class="btn" onclick="subDice()">Sub dice</button>
         <button id="resetButton" class="btn" onclick="reset()">Reset</button>
       </div>
+
+
+      <div id="currentRoundDisplay">Round: </div>
+      <div id="totalSumDisplay">Sum of dices: </div>
 
     </div>
 
