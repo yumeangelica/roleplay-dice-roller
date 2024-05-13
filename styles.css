@@ -1,0 +1,193 @@
+/* Reset browser formatting */
+* {
+  margin: 0;
+  padding: 0;
+}
+
+/* Root pseudo class for variables */
+:root {
+  --main-header-color: #e287eb;
+  --main-bg-color: #fff1fd;
+  --main-text-color: #50404d;
+  --src-code-color: #ca71da;
+  --src-code-hover: #d958e0;
+  --input-bg-color: #eed4f1;
+  --btn-bg-color: #ed91ee;
+  --btn-border-color: #ac62c7;
+  --btn-text-color: #ffffff;
+  --btn-focus-color: #f5aaf5;
+  --main-border-color: #d7a2db;
+}
+
+body {
+  background: var(--main-bg-color);
+  font-family: 'Arial', sans-serif;
+  margin: auto;
+}
+
+main {
+  width: 90%;
+  margin: auto;
+}
+
+h1 {
+  color: var(--main-header-color);
+  text-align: center;
+  font-size: 34px;
+  padding-bottom: 25px;
+  margin: 30px 0px 10px 0px;
+}
+
+a {
+  text-decoration: none;
+  color: var(--src-code-color);
+}
+
+a:hover {
+  color: var(--src-code-hover);
+  text-decoration: underline;
+}
+
+footer {
+  color: var(--main-text-color);
+  margin: 15px;
+  text-align: center;
+}
+
+.footer-fixer {
+  min-height: 85vh;
+}
+
+input, textarea {
+  margin: 5px;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid var(--main-border-color);
+  background-color: var(--input-bg-color);
+  color: var(--main-text-color);
+}
+
+input:focus, textarea:focus {
+  outline: none;
+  border-color: var(--btn-focus-color);
+}
+
+
+.source-code-link-container {
+  text-align: center;
+  font-size: 22px;
+  margin: 0px 0px 25px 0px;
+}
+
+.source-code-link {
+  color: var(--src-code-color);
+}
+
+.source-code-link:hover {
+  color: var(--src-code-hover);
+}
+
+.btn {
+  background-color: var(--btn-bg-color);
+  color: var(--btn-text-color);
+  border: 1px solid var(--btn-border-color);
+  border-radius: 8px;
+  margin: 3px;
+  width: 100px;
+}
+
+.btn:hover {
+  background-color: var(--main-header-color);
+  border: 1px solid var(--btn-border-color);
+}
+
+.btn:disabled {
+  background-color: var(--btn-disabled-color);
+  border: 1px solid var(--main-text-color);
+  color: var(--main-text-color);
+}
+
+.btn:focus {
+  color: var(--btn-focus-color);
+}
+
+.btn:active {
+  transform: scale(0.98);
+  box-shadow: 0px 0px 5px 1px var(--main-header-color);
+}
+
+/* Containers for dices and inputs */
+.dice-display-container, .dice-input-container {
+  text-align: center;
+  max-width: 200px;
+  margin: auto;
+}
+
+.dice {
+  max-width: 80px;
+  max-height: 80px;
+  min-height: 80px;
+  min-width: 80px;
+  background: var(--main-header-color);
+  border: 1px solid var(--main-border-color);
+  border-radius: 8px;
+  padding: 5px;
+  font-size: 45px;
+  text-align: center;
+  margin: auto;
+  margin-top: 5px;
+  margin-bottom: 10px;
+  box-shadow: 1.5px 1.5px 5px 1px var(--btn-text-color);
+  color: var(--main-bg-color);
+}
+
+#firstDice {
+  display: inline;
+}
+
+#secondDice {
+  /* Initially hide second dice */
+  display: none;
+}
+
+.dice-button-container {
+  text-align: center;
+  margin: auto;
+  width: 100px;
+}
+
+#subButton {
+  /* Initially hide second button */
+  display: none;
+}
+
+#firstDiceInputContainer, #secondDiceInputContainer {
+  margin: auto;
+  max-width: 120px;
+}
+
+.dice-input {
+  max-width: 80px;
+  width: 80px;
+  margin: 5px 3px 0px 2px;
+  text-align: center;
+}
+
+#firstDiceInput {
+  display: inline;
+}
+
+#secondDiceInput {
+  /* Initially hide second input */
+  display: none;
+}
+
+#currentRoundDisplay, #totalSumDisplay {
+  text-align: center;
+  margin: 5px 0px 5px 0px;
+}
+
+#totalSumDisplay {
+  /* Initially hide total sum */
+  display: none;
+}
