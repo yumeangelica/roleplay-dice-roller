@@ -17,7 +17,7 @@ const addDice = () => {
   document.getElementById('secondDiceInputContainer').style.display = 'inline';
   document.getElementById('addButton').style.display = 'none';
   showSecondDice = true;
-  document.getElementById('totalSumDisplay').style.display = 'block';
+  document.getElementById('totalSumDisplay').style.display = 'inline';
   document.getElementById('secondDiceInputLabel').style.display = 'block';
   document.getElementById('secondDiceInput').focus();
 };
@@ -43,7 +43,7 @@ const rollDice = () => {
 
 
   if (validateInput(n1, n2)) {  // Only proceed if the input is valid
-    document.getElementById('currentRoundDisplay').style.display = 'block';
+    document.getElementById('currentRoundDisplay').style.display = 'inline';
     calculateAndDisplayResults(n1, n2);
   }
 };
