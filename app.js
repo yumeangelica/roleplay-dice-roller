@@ -3,13 +3,37 @@ let maxDiceNumber = 2;
 let showSecondDice = false;
 let roundCounter = 0;
 
-document.getElementById('firstDice').textContent = '';
-document.getElementById('secondDice').textContent = '';
-document.getElementById('firstDiceInput').value = '';
-document.getElementById('secondDiceInput').value = '';
-document.getElementById('firstDiceInput').focus();
+document.addEventListener('DOMContentLoaded', (event) => {
+  // Initialize dice and input fields
+  document.getElementById('firstDice').textContent = '';
+  document.getElementById('secondDice').textContent = '';
+  document.getElementById('firstDiceInput').value = '';
+  document.getElementById('secondDiceInput').value = '';
+  document.getElementById('firstDiceInput').focus();
 
-// Function to add a second dice
+  showCopyRight(); // Display copyright information
+
+  // Add event listeners to buttons
+  document.getElementById('rollButton').addEventListener('click', rollDice);
+  document.getElementById('addButton').addEventListener('click', addDice);
+  document.getElementById('subButton').addEventListener('click', subDice);
+  document.getElementById('resetButton').addEventListener('click', reset);
+
+  // Event listeners for the Enter key on the input fields
+  document.getElementById('firstDiceInput').addEventListener('keyup', function (event) {
+    if (event.key === 'Enter') {
+      rollDice();
+    }
+  });
+
+  document.getElementById('secondDiceInput').addEventListener('keyup', function (event) {
+    if (event.key === 'Enter') {
+      rollDice();
+    }
+  });
+});
+
+// Add a second dice
 const addDice = () => {
   document.getElementById('secondDice').style.display = 'inline';
   document.getElementById('subButton').style.display = 'inline';
@@ -22,9 +46,9 @@ const addDice = () => {
   document.getElementById('secondDiceInput').focus();
 };
 
-// Function to remove the second dice
+// Remove the second dice
 const subDice = () => {
-  resetInputTwo();
+  resetInputTwo(); // Reset and hide second dice and related input elements
   document.getElementById('secondDice').style.display = 'none';
   document.getElementById('addButton').style.display = 'inline';
   document.getElementById('subButton').style.display = 'none';
@@ -36,11 +60,10 @@ const subDice = () => {
   document.getElementById('firstDiceInput').focus();
 };
 
-// Function to handle dice rolling
+// Handle dice rolling
 const rollDice = () => {
   let n1 = document.getElementById('firstDiceInput').value.trim();
   let n2 = document.getElementById('secondDiceInput').value.trim();
-
 
   if (validateInput(n1, n2)) {  // Only proceed if the input is valid
     document.getElementById('currentRoundDisplay').style.display = 'inline';
@@ -48,26 +71,25 @@ const rollDice = () => {
   }
 };
 
-// Validates the input and handles related alerts
+// Validate the input and handle related alerts
 const validateInput = (n1, n2) => {
   let inputValid = true;
 
   if (n1 === '' || isNaN(n1) || n1 < 1 || n1 > 20) {
     alert('Please enter a number between 1-20 for the first dice.');
-    resetInputOne();
+    resetInputOne(); // Reset the first dice input
     inputValid = false;
     document.getElementById('firstDiceInput').focus();
   }
 
-  // Check for the second dice only if it is active
   if (showSecondDice && (n2 === '' || isNaN(n2) || n2 < 1 || n2 > 20)) {
     alert('Please enter a number between 1-20 for the second dice.');
-    resetInputTwo();
+    resetInputTwo(); // Reset the second dice input
     inputValid = false;
     document.getElementById('secondDiceInput').focus();
   }
 
-  return inputValid;  // Return the validation result
+  return inputValid;
 };
 
 // Calculate dice results and update the UI
@@ -86,12 +108,13 @@ const calculateAndDisplayResults = (n1, n2) => {
   document.getElementById('totalSumDisplay').textContent = 'Sum of dices: ' + sum;
 };
 
-// Reset input fields
+// Reset input fields for the first dice
 const resetInputOne = () => {
   document.getElementById('firstDiceInput').value = '';
   document.getElementById('firstDice').textContent = '';
 };
 
+// Reset input fields for the second dice
 const resetInputTwo = () => {
   document.getElementById('secondDiceInput').value = '';
   document.getElementById('secondDice').textContent = '';
@@ -103,16 +126,3 @@ const reset = () => {
     location.reload();
   }
 };
-
-// Event listeners for enter key
-document.getElementById('firstDiceInput').addEventListener('keyup', function (event) {
-  if (event.key === 'Enter') {
-    document.getElementById('rollButton').click();
-  }
-});
-
-document.getElementById('secondDiceInput').addEventListener('keyup', function (event) {
-  if (event.key === 'Enter') {
-    document.getElementById('rollButton').click();
-  }
-});
