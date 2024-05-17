@@ -94,8 +94,6 @@ const validateInput = (n1, n2) => {
 
 // Calculate dice results and update the UI
 const calculateAndDisplayResults = (n1, n2) => {
-  if (!validateInput(n1, n2)) return;
-
   let d1 = n1 ? Math.floor(Math.random() * n1) + 1 : '';
   let d2 = n2 && showSecondDice ? Math.floor(Math.random() * n2) + 1 : '';
 
