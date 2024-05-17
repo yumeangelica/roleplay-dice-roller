@@ -15,30 +15,32 @@
 <body>
   <main class="footer-fixer">
     <div class="container">
-
       <h1>Roleplay dice roller</h1>
       <div class="source-code-link-container"><a href="https://github.com/yumeangelica/roleplay-dice-roller">Source Code</a></div>
 
+      <!-- Counter display -->
       <div class="counterDisplayContainer">
         <div id="currentRoundDisplay">Round: </div>
         <div id="totalSumDisplay">Sum of dices: </div>
       </div>
 
-      <div class="container dice-display-container">
+      <!-- Dices -->
+      <div class="dice-display-container">
         <div class="row">
-          <div id="firstDice" class="col-xs dice"></div>
-          <div id="secondDice" class="col-xs dice"></div>
+          <div id="firstDice" class="col-xs dice" aria-label="First dice"></div>
+          <div id="secondDice" class="col-xs dice" aria-label="Second dice"></div>
         </div>
       </div>
 
-      <div class="container dice-input-container">
+      <!-- Input and labels -->
+      <div class="dice-input-container">
         <div class="row">
-          <div class="col-xs" id="firstDiceInputContainer">
+          <div class="col" id="firstDiceInputContainer">
             <label for="firstDiceInput">Enter sides for Dice 1:</label>
             <input type="tel" maxlength="2" placeholder="1-20:" class="dice-input" id="firstDiceInput"
               aria-label="First dice input for numbers between 1 and 20">
           </div>
-          <div class="col-xs" id="secondDiceInputContainer">
+          <div class="col" id="secondDiceInputContainer">
             <label for="secondDiceInput" id="secondDiceInputLabel">Enter sides for Dice 2:</label>
             <input type="tel" maxlength="2" placeholder="1-20:" class="dice-input" id="secondDiceInput"
               aria-label="Second dice input for numbers between 1 and 20">
@@ -46,18 +48,17 @@
         </div>
       </div>
 
+      <!-- Buttons -->
       <div class="dice-button-container">
-        <button id="rollButton" class="btn">Roll dice</button>
-        <button id="addButton" class="btn">Add dice</button>
-        <button id="subButton" class="btn">Sub dice</button>
-        <button id="resetButton" class="btn">Reset</button>
+        <button id="rollButton" class="btn" aria-label="Roll dice">Roll dice</button>
+        <button id="addButton" class="btn" aria-label="Add second dice">Add dice</button>
+        <button id="subButton" class="btn" aria-label="Remove second dice">Sub dice</button>
+        <button id="resetButton" class="btn" aria-label="Reset game">Reset</button>
       </div>
-
     </div>
   </main>
 
-  <footer id="copyRight"></footer>
-
+  <footer id="copyRight" aria-label="Copyright information"></footer>
 </body>
 
 </html>

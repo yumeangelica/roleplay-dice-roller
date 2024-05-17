@@ -33,7 +33,7 @@ main {
 h1 {
   color: var(--main-header-color);
   text-align: center;
-  margin: 30px 0px 30px 0px;
+  margin: 30px 0;
 }
 
 a {
@@ -70,19 +70,10 @@ input:focus, textarea:focus {
   border-color: var(--btn-focus-color);
 }
 
-
 .source-code-link-container {
   text-align: center;
   font-size: 22px;
-  margin: 0px 0px 25px 0px;
-}
-
-.source-code-link {
-  color: var(--src-code-color);
-}
-
-.source-code-link:hover {
-  color: var(--src-code-hover);
+  margin: 0 0 25px;
 }
 
 .btn {
@@ -92,17 +83,11 @@ input:focus, textarea:focus {
   border-radius: 8px;
   margin: 8px;
   width: 100px;
+  cursor: pointer;
 }
 
 .btn:hover {
   background-color: var(--main-header-color);
-  border: 1px solid var(--btn-border-color);
-}
-
-.btn:disabled {
-  background-color: var(--btn-disabled-color);
-  border: 1px solid var(--main-text-color);
-  color: var(--main-text-color);
 }
 
 .btn:focus {
@@ -111,7 +96,7 @@ input:focus, textarea:focus {
 
 .btn:active {
   transform: scale(0.98);
-  box-shadow: 0px 0px 5px 1px var(--main-header-color);
+  box-shadow: 0 0 5px 1px var(--main-header-color);
 }
 
 /* Containers for dices and inputs */
@@ -135,21 +120,11 @@ input:focus, textarea:focus {
   align-items: center;
   text-align: center;
   line-height: 100px;
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15),
-    inset 0 1px 3px rgba(255, 255, 255, 0.2);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15), inset 0 1px 3px rgba(255, 255, 255, 0.2);
 }
 
 input, button {
   cursor: pointer;
-}
-
-#firstDice {
-  display: inline;
-}
-
-#secondDice {
-  /* Initially hide second dice */
-  display: none;
 }
 
 .dice-button-container {
@@ -159,50 +134,31 @@ input, button {
   max-width: 100%;
 }
 
-#subButton {
-  /* Initially hide second button */
-  display: none;
-}
-
 #firstDiceInputContainer, #secondDiceInputContainer {
   margin: auto;
-  max-width: 200px;
+  max-width: 120px;
   margin-top: 10px;
 }
 
 .dice-input {
-  max-width: 80px;
-  width: 80px;
-  margin: 8px 3px 0px 2px;
-  text-align: center;
+  max-width: 75px;
+  width: 75px;
+  margin: 8px 3px 0 2px;
 }
 
-#firstDiceInput {
-  display: inline;
-}
-
-#secondDiceInputLabel {
-  display: none;
-}
-
-#secondDiceInput {
-  /* Initially hide second input */
+#secondDice, #secondDiceInputLabel, #secondDiceInput, #secondDiceInputContainer, #subButton, #currentRoundDisplay, #totalSumDisplay {
   display: none;
 }
 
 .counterDisplayContainer {
   text-align: center;
   margin-bottom: 10px;
+  height: 30px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 #currentRoundDisplay, #totalSumDisplay {
-  /* Initially hide displays */
-  display: none;
-  text-align: center;
-  margin: 10px;
-}
-
-#totalSumDisplay {
-  /* Initially hide total sum */
-  display: none;
+  margin: 0 10px;
 }
