@@ -14,7 +14,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
   document.getElementById('secondDice').textContent = '';
   document.getElementById('firstDiceInput').value = '';
   document.getElementById('secondDiceInput').value = '';
-  document.getElementById('firstDiceInput').focus();
+  document.getElementById('firstDiceSelect').focus();
 
   showCopyRight(); // Display copyright information
 
@@ -23,6 +23,10 @@ document.addEventListener('DOMContentLoaded', (event) => {
   document.getElementById('addButton').addEventListener('click', addDice);
   document.getElementById('subButton').addEventListener('click', subDice);
   document.getElementById('resetButton').addEventListener('click', reset);
+
+  // Event listeners for dropdown changes
+  document.getElementById('firstDiceSelect').addEventListener('change', handleFirstDiceSelectChange);
+  document.getElementById('secondDiceSelect').addEventListener('change', handleSecondDiceSelectChange);
 
   // Event listeners for the Enter key on the input fields
   document.getElementById('firstDiceInput').addEventListener('keyup', function (event) {
@@ -49,13 +53,14 @@ const addDice = () => {
   secondDice.style.display = 'flex';
   secondDice.classList.add('show');
   document.getElementById('subButton').style.display = 'inline';
-  document.getElementById('secondDiceInput').style.display = 'inline';
+  document.getElementById('secondDiceSelect').style.display = 'block';
+  document.getElementById('secondDiceInput').style.display = 'none';
   document.getElementById('secondDiceInputContainer').style.display = 'flex';
   document.getElementById('addButton').style.display = 'none';
   showSecondDice = true;
   document.getElementById('totalSumDisplay').style.display = 'inline';
-  document.getElementById('secondDiceInputLabel').style.display = 'block';
-  document.getElementById('secondDiceInput').focus();
+  document.getElementById('secondDiceSelectLabel').style.display = 'block';
+  document.getElementById('secondDiceSelect').focus();
 };
 
 /**
@@ -71,12 +76,13 @@ const subDice = () => {
   secondDice.classList.remove('show');
   document.getElementById('addButton').style.display = 'inline';
   document.getElementById('subButton').style.display = 'none';
+  document.getElementById('secondDiceSelect').style.display = 'none';
   document.getElementById('secondDiceInput').style.display = 'none';
   document.getElementById('secondDiceInputContainer').style.display = 'none';
   showSecondDice = false;
   document.getElementById('totalSumDisplay').style.display = 'none';
-  document.getElementById('secondDiceInputLabel').style.display = 'none';
-  document.getElementById('firstDiceInput').focus();
+  document.getElementById('secondDiceSelectLabel').style.display = 'none';
+  document.getElementById('firstDiceSelect').focus();
 };
 
 /**
@@ -86,8 +92,8 @@ const subDice = () => {
  * If the input is invalid, it shows an alert and resets the relevant input field.
  */
 const rollDice = () => {
-  const n1 = document.getElementById('firstDiceInput').value.trim();
-  const n2 = document.getElementById('secondDiceInput').value.trim();
+  const n1 = getDiceValue('first');
+  const n2 = showSecondDice ? getDiceValue('second') : 0;
 
   if (validateInput(n1, n2)) {  // Only proceed if the input is valid
     document.getElementById('currentRoundDisplay').style.display = 'inline';
@@ -97,27 +103,41 @@ const rollDice = () => {
 
 /**
  * Validate the input values for dice
- * Checks if the input values are valid numbers between 1-20
+ * Checks if the input values are valid numbers between 1-999
  * Shows appropriate alerts and resets inputs if validation fails
- * @param {string} n1 - The first dice input value
- * @param {string} n2 - The second dice input value
+ * @param {number} n1 - The first dice input value
+ * @param {number} n2 - The second dice input value
  * @returns {boolean} True if all inputs are valid, false otherwise
  */
 const validateInput = (n1, n2) => {
   let inputValid = true;
 
-  if (n1 === '' || isNaN(n1) || n1 < 1 || n1 > 20) {
-    alert('Please enter a number between 1-20 for the first dice.');
-    resetInputOne(); // Reset the first dice input
+  // Check first dice
+  if (n1 === 0 || isNaN(n1) || n1 < 1 || n1 > 999) {
+    const firstSelect = document.getElementById('firstDiceSelect');
+    if (firstSelect.value === 'custom') {
+      alert('Please enter a number between 1-999 for the first dice.');
+      resetInputOne();
+      document.getElementById('firstDiceInput').focus();
+    } else {
+      alert('Please select a valid dice type for the first dice.');
+      firstSelect.focus();
+    }
     inputValid = false;
-    document.getElementById('firstDiceInput').focus();
   }
 
-  if (showSecondDice && (n2 === '' || isNaN(n2) || n2 < 1 || n2 > 20)) {
-    alert('Please enter a number between 1-20 for the second dice.');
-    resetInputTwo(); // Reset the second dice input
+  // Check second dice if visible
+  if (showSecondDice && (n2 === 0 || isNaN(n2) || n2 < 1 || n2 > 999)) {
+    const secondSelect = document.getElementById('secondDiceSelect');
+    if (secondSelect.value === 'custom') {
+      alert('Please enter a number between 1-999 for the second dice.');
+      resetInputTwo();
+      document.getElementById('secondDiceInput').focus();
+    } else {
+      alert('Please select a valid dice type for the second dice.');
+      secondSelect.focus();
+    }
     inputValid = false;
-    document.getElementById('secondDiceInput').focus();
   }
 
   return inputValid;
@@ -145,19 +165,23 @@ const calculateAndDisplayResults = (n1, n2) => {
 
 /**
  * Reset input field and display for the first dice
- * Clears the input value and dice display text
+ * Clears the input value, resets dropdown to D20, and hides custom input
  */
 const resetInputOne = () => {
   document.getElementById('firstDiceInput').value = '';
+  document.getElementById('firstDiceSelect').value = '20';
+  document.getElementById('firstDiceInput').style.display = 'none';
   document.getElementById('firstDice').textContent = '';
 };
 
 /**
  * Reset input field and display for the second dice
- * Clears the input value and dice display text
+ * Clears the input value, resets dropdown to D20, and hides custom input
  */
 const resetInputTwo = () => {
   document.getElementById('secondDiceInput').value = '';
+  document.getElementById('secondDiceSelect').value = '20';
+  document.getElementById('secondDiceInput').style.display = 'none';
   document.getElementById('secondDice').textContent = '';
 };
 
@@ -170,4 +194,54 @@ const reset = () => {
   if (confirm('Are you sure you want to reset?')) {
     location.reload();
   }
+};
+
+/**
+ * Handle first dice select dropdown change
+ * Shows/hides custom input based on selection
+ */
+const handleFirstDiceSelectChange = () => {
+  const select = document.getElementById('firstDiceSelect');
+  const input = document.getElementById('firstDiceInput');
+
+  if (select.value === 'custom') {
+    input.style.display = 'block';
+    input.focus();
+  } else {
+    input.style.display = 'none';
+    input.value = '';
+  }
+};
+
+/**
+ * Handle second dice select dropdown change
+ * Shows/hides custom input based on selection
+ */
+const handleSecondDiceSelectChange = () => {
+  const select = document.getElementById('secondDiceSelect');
+  const input = document.getElementById('secondDiceInput');
+
+  if (select.value === 'custom') {
+    input.style.display = 'block';
+    input.focus();
+  } else {
+    input.style.display = 'none';
+    input.value = '';
+  }
+};
+
+/**
+ * Get the dice value from either dropdown or custom input
+ * @param {string} diceNumber - 'first' or 'second'
+ * @returns {number} The dice value
+ */
+const getDiceValue = (diceNumber) => {
+  const select = document.getElementById(diceNumber + 'DiceSelect');
+  const input = document.getElementById(diceNumber + 'DiceInput');
+
+  if (select.value === 'custom') {
+    return parseInt(input.value) || 0;
+  }
+
+  return parseInt(select.value) || 0;
 };
