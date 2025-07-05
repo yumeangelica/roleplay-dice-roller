@@ -8,7 +8,7 @@
   <link rel="stylesheet" type="text/css" href="./styles.css">
   <title>Roleplay Dice Roller</title>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no, user-scalable=no, maximum-scale=1, minimum-scale=1">
   <script src="./app.js" defer></script>
   <script src="./copyright.js" defer></script>
 </head>
@@ -43,14 +43,34 @@
       <div class="dice-input-container">
         <div class="row">
           <div id="firstDiceInputContainer">
-            <label for="firstDiceInput">Enter sides for Dice 1:</label>
-            <input type="tel" maxlength="2" placeholder="1-20:" class="dice-input" id="firstDiceInput"
-              aria-label="First dice input for numbers between 1 and 20">
+            <label for="firstDiceSelect">Select sides for Dice 1:</label>
+            <select class="dice-select" id="firstDiceSelect" aria-label="First dice type selection">
+              <option value="4">D4</option>
+              <option value="6">D6</option>
+              <option value="8">D8</option>
+              <option value="10">D10</option>
+              <option value="12">D12</option>
+              <option value="20" selected>D20</option>
+              <option value="100">D100</option>
+              <option value="custom">Custom</option>
+            </select>
+            <input type="tel" maxlength="3" placeholder="1-999:" class="dice-input" id="firstDiceInput"
+              aria-label="First dice custom input for numbers between 1 and 999" style="display: none;">
           </div>
           <div id="secondDiceInputContainer">
-            <label for="secondDiceInput" id="secondDiceInputLabel">Enter sides for Dice 2:</label>
-            <input type="tel" maxlength="2" placeholder="1-20:" class="dice-input" id="secondDiceInput"
-              aria-label="Second dice input for numbers between 1 and 20">
+            <label for="secondDiceSelect" id="secondDiceSelectLabel">Select sides for Dice 2:</label>
+            <select class="dice-select" id="secondDiceSelect" aria-label="Second dice type selection">
+              <option value="4">D4</option>
+              <option value="6">D6</option>
+              <option value="8">D8</option>
+              <option value="10">D10</option>
+              <option value="12">D12</option>
+              <option value="20" selected>D20</option>
+              <option value="100">D100</option>
+              <option value="custom">Custom</option>
+            </select>
+            <input type="tel" maxlength="3" placeholder="1-999:" class="dice-input" id="secondDiceInput"
+              aria-label="Second dice custom input for numbers between 1 and 999" style="display: none;">
           </div>
         </div>
       </div>
