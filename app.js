@@ -1,208 +1,221 @@
-// Element selection and initial state setup
-let maxDiceNumber = 2;
+/**
+ * Dice Roller — 2026 Modernized
+ * Vanilla JS, no frameworks
+ * Note: Footer copyright is handled by copyright.js
+ */
+
+// ---- State ----
 let showSecondDice = false;
 let roundCounter = 0;
 
-/**
- * Initialize the application when DOM content is loaded
- * Sets up initial state and event listeners for all interactive elements
- * @param {Event} event - The DOMContentLoaded event
- */
-document.addEventListener('DOMContentLoaded', (event) => {
-  // Initialize dice and input fields
-  document.getElementById('firstDice').textContent = '';
-  document.getElementById('secondDice').textContent = '';
-  document.getElementById('firstDiceInput').value = '';
-  document.getElementById('secondDiceInput').value = '';
-  document.getElementById('firstDiceSelect').focus();
+// ---- DOM refs (cached once) ----
+const $ = (id) => document.getElementById(id);
 
-  showCopyRight(); // Display copyright information
+let els; // populated on DOMContentLoaded
 
-  // Add event listeners to buttons
-  document.getElementById('rollButton').addEventListener('click', rollDice);
-  document.getElementById('addButton').addEventListener('click', addDice);
-  document.getElementById('subButton').addEventListener('click', subDice);
-  document.getElementById('resetButton').addEventListener('click', reset);
+// ---- Helpers ----
 
-  // Event listeners for dropdown changes
-  document.getElementById('firstDiceSelect').addEventListener('change', handleFirstDiceSelectChange);
-  document.getElementById('secondDiceSelect').addEventListener('change', handleSecondDiceSelectChange);
+/** Crypto-quality random integer 1…max */
+const rollRandom = (max) => {
+  const array = new Uint32Array(1);
+  crypto.getRandomValues(array);
+  return (array[0] % max) + 1;
+};
 
-  // Event listeners for the Enter key on the input fields
-  document.getElementById('firstDiceInput').addEventListener('keyup', function (event) {
-    if (event.key === 'Enter') {
-      rollDice();
-    }
-  });
+/** Clear validation state from an element */
+const clearValidation = (el) => {
+  el.classList.remove('invalid');
+  const msg = el.closest('#firstDiceInputContainer, #secondDiceInputContainer')
+    ?.querySelector('.validation-msg');
+  if (msg) msg.textContent = '';
+};
 
-  document.getElementById('secondDiceInput').addEventListener('keyup', function (event) {
-    if (event.key === 'Enter') {
-      rollDice();
-    }
-  });
-});
+/** Show inline validation error */
+const showValidationError = (el, message) => {
+  el.classList.add('invalid');
+  const container = el.closest('#firstDiceInputContainer, #secondDiceInputContainer');
+  let msg = container?.querySelector('.validation-msg');
+  if (!msg && container) {
+    msg = document.createElement('span');
+    msg.className = 'validation-msg';
+    container.appendChild(msg);
+  }
+  if (msg) msg.textContent = message;
 
-/**
- * Add second dice functionality
- * Displays the second dice input and related elements.
- * Hides the add button and shows the subtract button.
- * Sets focus to the second dice input field.
- */
-const addDice = () => {
-  const secondDice = document.getElementById('secondDice');
-  secondDice.style.display = 'flex';
-  secondDice.classList.add('show');
-  document.getElementById('subButton').style.display = 'inline';
-  document.getElementById('secondDiceSelect').style.display = 'block';
-  document.getElementById('secondDiceInput').style.display = 'none';
-  document.getElementById('secondDiceInputContainer').style.display = 'flex';
-  document.getElementById('addButton').style.display = 'none';
-  showSecondDice = true;
-  document.getElementById('totalSumDisplay').style.display = 'inline';
-  document.getElementById('secondDiceSelectLabel').style.display = 'block';
-  document.getElementById('secondDiceSelect').focus();
+  // Auto-clear after 2.5s
+  setTimeout(() => clearValidation(el), 2500);
 };
 
 /**
- * Subtract second dice functionality
- * Hides the second dice input and related elements.
- * Resets the second dice input and shows the add button.
- * The total sum display is hidden, and focus is set back to the first dice input.
+ * Trigger 3D tumble animation on a dice element.
+ * Clears text during tumble, then shows result with a pop-in.
  */
-const subDice = () => {
-  resetInputTwo(); // Reset and hide second dice and related input elements
-  const secondDice = document.getElementById('secondDice');
-  secondDice.style.display = 'none';
-  secondDice.classList.remove('show');
-  document.getElementById('addButton').style.display = 'inline';
-  document.getElementById('subButton').style.display = 'none';
-  document.getElementById('secondDiceSelect').style.display = 'none';
-  document.getElementById('secondDiceInput').style.display = 'none';
-  document.getElementById('secondDiceInputContainer').style.display = 'none';
-  showSecondDice = false;
-  document.getElementById('totalSumDisplay').style.display = 'none';
-  document.getElementById('secondDiceSelectLabel').style.display = 'none';
-  document.getElementById('firstDiceSelect').focus();
+const animateDice = (diceEl, result) => {
+  // Remove any lingering animation classes
+  diceEl.classList.remove('rolling', 'result-pop');
+  diceEl.textContent = '';
+
+  // Force reflow so re-adding the class restarts the animation
+  void diceEl.offsetWidth;
+
+  // Start tumble
+  diceEl.classList.add('rolling');
+
+  // When tumble ends → show result with pop
+  diceEl.addEventListener('animationend', function onTumbleEnd() {
+    diceEl.removeEventListener('animationend', onTumbleEnd);
+    diceEl.classList.remove('rolling');
+
+    // Set result and do pop-in
+    diceEl.textContent = result;
+    void diceEl.offsetWidth;
+    diceEl.classList.add('result-pop');
+
+    diceEl.addEventListener('animationend', function onPopEnd() {
+      diceEl.removeEventListener('animationend', onPopEnd);
+      diceEl.classList.remove('result-pop');
+    });
+  });
 };
 
-/**
- * Roll dice functionality
- * Retrieves the values from the input fields, validates them, and calculates the results.
- * Updates the UI with the current round number, dice results, and total sum.
- * If the input is invalid, it shows an alert and resets the relevant input field.
- */
+/** Animate counter badge update */
+const animateCounter = (el) => {
+  el.classList.remove('updated');
+  void el.offsetWidth;
+  el.classList.add('updated');
+};
+
+// ---- Dice value logic ----
+
+const getDiceValue = (prefix) => {
+  const select = $(prefix + 'DiceSelect');
+  const input = $(prefix + 'DiceInput');
+
+  if (select.value === 'custom') {
+    return parseInt(input.value, 10) || 0;
+  }
+  return parseInt(select.value, 10) || 0;
+};
+
+const validateDice = (prefix) => {
+  const value = getDiceValue(prefix);
+
+  if (value >= 1 && value <= 999) return value;
+
+  // Only custom input can be invalid
+  const input = $(prefix + 'DiceInput');
+  const label = prefix === 'first' ? 'First' : 'Second';
+  showValidationError(input, `${label}: 1–999`);
+  input.focus();
+  return null;
+};
+
+// ---- Core actions ----
+
 const rollDice = () => {
-  const n1 = getDiceValue('first');
-  const n2 = showSecondDice ? getDiceValue('second') : 0;
+  const n1 = validateDice('first');
+  if (n1 === null) return;
 
-  if (validateInput(n1, n2)) {  // Only proceed if the input is valid
-    document.getElementById('currentRoundDisplay').style.display = 'inline';
-    calculateAndDisplayResults(n1, n2);
-  }
-};
-
-/**
- * Validate the input values for dice
- * Checks if the input values are valid numbers between 1-999
- * Shows appropriate alerts and resets inputs if validation fails
- * @param {number} n1 - The first dice input value
- * @param {number} n2 - The second dice input value
- * @returns {boolean} True if all inputs are valid, false otherwise
- */
-const validateInput = (n1, n2) => {
-  let inputValid = true;
-
-  // Check first dice
-  if (n1 === 0 || isNaN(n1) || n1 < 1 || n1 > 999) {
-    const firstSelect = document.getElementById('firstDiceSelect');
-    if (firstSelect.value === 'custom') {
-      alert('Please enter a number between 1-999 for the first dice.');
-      resetInputOne();
-      document.getElementById('firstDiceInput').focus();
-    } else {
-      alert('Please select a valid dice type for the first dice.');
-      firstSelect.focus();
-    }
-    inputValid = false;
+  let n2 = 0;
+  if (showSecondDice) {
+    n2 = validateDice('second');
+    if (n2 === null) return;
   }
 
-  // Check second dice if visible
-  if (showSecondDice && (n2 === 0 || isNaN(n2) || n2 < 1 || n2 > 999)) {
-    const secondSelect = document.getElementById('secondDiceSelect');
-    if (secondSelect.value === 'custom') {
-      alert('Please enter a number between 1-999 for the second dice.');
-      resetInputTwo();
-      document.getElementById('secondDiceInput').focus();
-    } else {
-      alert('Please select a valid dice type for the second dice.');
-      secondSelect.focus();
-    }
-    inputValid = false;
-  }
+  // Show round display
+  els.currentRound.style.display = 'inline';
 
-  return inputValid;
-};
-
-/**
- * Calculate dice results and update the UI
- * Generates random numbers for each dice based on input values
- * Updates the display with dice results, round counter, and sum
- * @param {string} n1 - The number of sides for the first dice
- * @param {string} n2 - The number of sides for the second dice
- */
-const calculateAndDisplayResults = (n1, n2) => {
-  const d1 = n1 ? Math.floor(Math.random() * n1) + 1 : '';
-  const d2 = n2 && showSecondDice ? Math.floor(Math.random() * n2) + 1 : '';
+  // Generate results
+  const d1 = rollRandom(n1);
+  const d2 = showSecondDice ? rollRandom(n2) : null;
 
   roundCounter++;
-  document.getElementById('currentRoundDisplay').textContent = 'Round: ' + roundCounter;
-  document.getElementById('firstDice').textContent = d1;
-  document.getElementById('secondDice').textContent = d2;
 
-  const sum = (d1 || 0) + (d2 || 0);
-  document.getElementById('totalSumDisplay').textContent = 'Sum of dices: ' + sum;
+  // Animate dice with tumble → result pop sequence
+  animateDice(els.firstDice, d1);
+  if (showSecondDice) {
+    animateDice(els.secondDice, d2);
+  }
+
+  // Update counters (with a slight delay to sync with dice animation)
+  setTimeout(() => {
+    els.currentRound.textContent = 'Round: ' + roundCounter;
+    animateCounter(els.currentRound);
+
+    if (showSecondDice && d2 !== null) {
+      els.totalSum.textContent = 'Sum of dices: ' + (d1 + d2);
+      animateCounter(els.totalSum);
+    }
+  }, 650);
 };
 
-/**
- * Reset input field and display for the first dice
- * Clears the input value, resets dropdown to D20, and hides custom input
- */
+const addDice = () => {
+  els.secondDice.classList.add('show');
+  $('subButton').style.display = 'inline';
+  $('secondDiceSelect').style.display = 'block';
+  $('secondDiceInput').style.display = 'none';
+  $('secondDiceInputContainer').style.display = 'flex';
+  $('addButton').style.display = 'none';
+  $('secondDiceSelectLabel').style.display = 'block';
+  els.totalSum.style.display = 'inline';
+  showSecondDice = true;
+  $('secondDiceSelect').focus();
+};
+
+const subDice = () => {
+  resetInputTwo();
+  els.secondDice.classList.remove('show');
+  $('addButton').style.display = 'inline';
+  $('subButton').style.display = 'none';
+  $('secondDiceSelect').style.display = 'none';
+  $('secondDiceInput').style.display = 'none';
+  $('secondDiceInputContainer').style.display = 'none';
+  $('secondDiceSelectLabel').style.display = 'none';
+  els.totalSum.style.display = 'none';
+  showSecondDice = false;
+  $('firstDiceSelect').focus();
+};
+
 const resetInputOne = () => {
-  document.getElementById('firstDiceInput').value = '';
-  document.getElementById('firstDiceSelect').value = '20';
-  document.getElementById('firstDiceInput').style.display = 'none';
-  document.getElementById('firstDice').textContent = '';
+  $('firstDiceInput').value = '';
+  $('firstDiceSelect').value = '20';
+  $('firstDiceInput').style.display = 'none';
+  els.firstDice.textContent = '';
 };
 
-/**
- * Reset input field and display for the second dice
- * Clears the input value, resets dropdown to D20, and hides custom input
- */
 const resetInputTwo = () => {
-  document.getElementById('secondDiceInput').value = '';
-  document.getElementById('secondDiceSelect').value = '20';
-  document.getElementById('secondDiceInput').style.display = 'none';
-  document.getElementById('secondDice').textContent = '';
+  $('secondDiceInput').value = '';
+  $('secondDiceSelect').value = '20';
+  $('secondDiceInput').style.display = 'none';
+  els.secondDice.textContent = '';
 };
 
-/**
- * Reset the entire application to initial state
- * Shows a confirmation dialog before reloading the page
- * Resets all dice, counters, and input fields
- */
-const reset = () => {
-  if (confirm('Are you sure you want to reset?')) {
-    location.reload();
-  }
+const resetAll = () => {
+  if (roundCounter > 0 && !confirm('Are you sure you want to reset?')) return;
+
+  roundCounter = 0;
+  resetInputOne();
+  resetInputTwo();
+
+  if (showSecondDice) subDice();
+
+  els.currentRound.style.display = 'none';
+  els.currentRound.textContent = '';
+  els.totalSum.style.display = 'none';
+  els.totalSum.textContent = '';
+  els.firstDice.classList.remove('rolling', 'result-pop');
+  els.secondDice.classList.remove('rolling', 'result-pop');
+  $('firstDiceSelect').focus();
 };
 
-/**
- * Handle first dice select dropdown change
- * Shows/hides custom input based on selection
- */
-const handleFirstDiceSelectChange = () => {
-  const select = document.getElementById('firstDiceSelect');
-  const input = document.getElementById('firstDiceInput');
+// ---- Select change handlers ----
+
+const handleSelectChange = (prefix) => {
+  const select = $(prefix + 'DiceSelect');
+  const input = $(prefix + 'DiceInput');
+
+  clearValidation(select);
+  clearValidation(input);
 
   if (select.value === 'custom') {
     input.style.display = 'block';
@@ -213,35 +226,39 @@ const handleFirstDiceSelectChange = () => {
   }
 };
 
-/**
- * Handle second dice select dropdown change
- * Shows/hides custom input based on selection
- */
-const handleSecondDiceSelectChange = () => {
-  const select = document.getElementById('secondDiceSelect');
-  const input = document.getElementById('secondDiceInput');
+// ---- Init ----
 
-  if (select.value === 'custom') {
-    input.style.display = 'block';
-    input.focus();
-  } else {
-    input.style.display = 'none';
-    input.value = '';
-  }
-};
+document.addEventListener('DOMContentLoaded', () => {
+  // Cache elements
+  els = {
+    firstDice: $('firstDice'),
+    secondDice: $('secondDice'),
+    currentRound: $('currentRoundDisplay'),
+    totalSum: $('totalSumDisplay'),
+  };
 
-/**
- * Get the dice value from either dropdown or custom input
- * @param {string} diceNumber - 'first' or 'second'
- * @returns {number} The dice value
- */
-const getDiceValue = (diceNumber) => {
-  const select = document.getElementById(diceNumber + 'DiceSelect');
-  const input = document.getElementById(diceNumber + 'DiceInput');
+  // Clear initial state
+  els.firstDice.textContent = '';
+  els.secondDice.textContent = '';
+  $('firstDiceInput').value = '';
+  $('secondDiceInput').value = '';
+  $('firstDiceSelect').focus();
 
-  if (select.value === 'custom') {
-    return parseInt(input.value) || 0;
-  }
+  // Button listeners
+  $('rollButton').addEventListener('click', rollDice);
+  $('addButton').addEventListener('click', addDice);
+  $('subButton').addEventListener('click', subDice);
+  $('resetButton').addEventListener('click', resetAll);
 
-  return parseInt(select.value) || 0;
-};
+  // Select change listeners
+  $('firstDiceSelect').addEventListener('change', () => handleSelectChange('first'));
+  $('secondDiceSelect').addEventListener('change', () => handleSelectChange('second'));
+
+  // Clear validation on input
+  $('firstDiceInput').addEventListener('input', (e) => clearValidation(e.target));
+  $('secondDiceInput').addEventListener('input', (e) => clearValidation(e.target));
+
+  // Enter key → roll
+  $('firstDiceInput').addEventListener('keyup', (e) => { if (e.key === 'Enter') rollDice(); });
+  $('secondDiceInput').addEventListener('keyup', (e) => { if (e.key === 'Enter') rollDice(); });
+});
