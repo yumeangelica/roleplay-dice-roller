@@ -1,90 +1,52 @@
 # Roleplay Dice Roller
 
-Originally developed in 2020, this modern Vanilla JavaScript dice roller is specifically designed for tabletop roleplaying games. The application provides an intuitive interface for rolling custom dice and tracking game statistics.
+A static Vanilla JavaScript dice roller for tabletop roleplaying games. Roll one or two standard dice, or define a custom die with up to 999 sides.
 
-**Major modernization update in 2026** - Completely redesigned with a pink aesthetic, 3D dice animations, enhanced accessibility, and mobile-first responsive design. Zero external JavaScript dependencies.
+Originally created in 2020 and polished in 2026 with yumeangelica's warm mauve design system, self-hosted Comfortaa, mobile-first controls, and clearer result and validation states.
 
 ## Features
 
-- **Flexible Dice System** - Choose between one or two dice with configurable dice types (D4, D6, D8, D10, D12, D20, D100, or Custom)
-- **Dice Type Selection** - Dropdown menus for each die with common RPG dice types and custom option (1–999 sides)
-- **3D Dice Animations** - Perspective-based tumble animation with result pop-in effect
-- **Roll Tracking** - Automatic counter for number of rounds and dice sum totals
-- **Smart Reset** - Reset with confirmation dialog to prevent accidental loss of progress
-- **Cryptographic Randomness** - Uses `crypto.getRandomValues()` for fair dice rolls
-- **Modern UI/UX** - Pink color palette with smooth animations and subtle borders
-- **Mobile-First Design** - Optimized layout that works on all devices with zoom prevention
-- **Touch-Action Optimized** - Prevents unwanted zooming and ensures precise touch interactions
-- **Accessibility Ready** - ARIA labels, keyboard navigation, and screen reader support
-- **Portfolio Integration** - Direct links to source code and developer portfolio
+- D4, D6, D8, D10, D12, D20, D100, and custom 1–999-sided dice
+- One- or two-die rolls with round and total tracking
+- `crypto.getRandomValues()` with rejection sampling to avoid modulo bias
+- Short dice animation whose timing is separate from result logic
+- Inline custom-value errors linked to their fields
+- Native reset dialog with focus restoration
+- System-aware light/dark theme switch with a saved user preference
+- Reduced-motion, forced-colors, browser zoom, and 44px+ target support
 
-## Technologies & Standards
+## Technology
 
-- **Vanilla JavaScript (ES6+)** - Modern syntax with const/let, arrow functions, and Web Crypto API
-- **HTML5** - Semantic markup with accessibility best practices and mobile viewport optimization
-- **CSS3** - Custom properties, Flexbox, 3D transforms, perspective animations, and responsive design
-- **Google Fonts (Inter)** - Professional typography optimized for web
-- **Zero Dependencies** - No frameworks or external JavaScript libraries required
-- **Mobile-First Approach** - Touch-optimized with zoom prevention and tap highlight removal
+- Semantic HTML, modern CSS, and Vanilla JavaScript
+- Web Crypto API for unbiased bounded random integers
+- Self-hosted Comfortaa 400/600/700 under the SIL Open Font License
+- No runtime dependencies, package manager, or build step
 
-## Accessibility & UX Features
+## Run locally
 
-- **Keyboard Navigation** - Full app functionality via keyboard, Enter key triggers roll
-- **Screen Reader Support** - Comprehensive ARIA labels and descriptions
-- **Input Validation** - Inline error messages with auto-clear and shake animation
-- **Mobile Optimized** - Touch-friendly interface with proper spacing and zoom prevention
-- **Touch-Action Control** - Prevents unwanted zooming and accidental selections on mobile devices
-- **Cross-Platform Touch** - Optimized for both mouse and touch interactions
+Open `index.html`, or run `python3 -m http.server 4173` and visit `http://localhost:4173`.
 
-## Getting Started
+Choose a die, optionally add the second die, and select **Roll dice**. Choosing **Custom** reveals the 1–999 side input.
 
-1. **Clone or Download** - Get the project files to your local machine
-2. **Open in Browser** - Simply open `index.html` in any modern web browser
-3. **Select Dice Type** - Choose your preferred dice type from the dropdown
-4. **Enter Dice Values** - For custom dice, enter the number of sides (1–999)
-5. **Start Rolling** - Click "Roll Dice" or press Enter to roll
-6. **Add Second Dice** - Click "Add dice" to add a second die for combined rolls
-7. **Track Progress** - View round counters and sum totals automatically
+## Accessibility notes
 
-## Browser Support
+The roller uses native fieldsets and controls, one polite roll-status region, explicit inline errors, visible focus, and motion-independent results. It targets WCAG 2.2 AA practices, but this is not a claim of complete conformance without assistive-technology and device testing.
 
-This application works on all modern browsers including:
+## Project structure
 
-- **Chrome** 88+
-- **Firefox** 85+
-- **Safari** 14+
-- **Edge** 88+
-- **Mobile browsers** - iOS Safari, Chrome Mobile, Samsung Internet
-
-## Responsive Breakpoints
-
-- **Desktop** - Full layout for screens 769px+
-- **Tablet** - Adjusted spacing and sizing for 481px–768px
-- **Mobile** - Touch-optimized interface for 321px–480px
-- **Small screens** - Ultra-compact mode for 320px and below
-
-## Design System
-
-- **Color Palette** - Pink-themed with design tokens as CSS custom properties
-- **Typography** - Inter font family for clean, modern readability
-- **Spacing** - Responsive scaling with `clamp()` functions
-- **Animations** - 0.25s transitions, 0.65s 3D dice tumble with spring easing
-
-## Project Structure
-
-```
-├── index.html      # Main HTML document
-├── styles.css      # All styles with CSS custom properties
-├── app.js          # Dice rolling logic, animations, and UI state
-├── copyright.js    # Dynamic footer copyright year
-├── LICENSE         # CC BY-NC-SA 4.0
-└── README.md
+```text
+index.html       Dice controls, outputs, and reset dialog
+styles.css       Palette A tokens and mobile-first styles
+app.js           Validation, randomness, animation state, and results
+theme.js         Early theme setup, switch state, and saved preference
+copyright.js     Current footer year
+fonts/           Local Comfortaa files and OFL license
 ```
 
 ## License
 
-This project is licensed under the Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License. See the [LICENSE](LICENSE) file for details.
+Application code and content are licensed under [CC BY-NC-SA 4.0](LICENSE). Comfortaa remains under the SIL Open Font License in `fonts/OFL.txt`.
 
 ---
 
-**Created with love by [yumeangelica](https://yumeangelica.github.io) | 2020–2026**
+Created with love by [yumeangelica](https://yumeangelica.github.io) · 2020–2026

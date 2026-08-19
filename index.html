@@ -3,87 +3,134 @@
 
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no, user-scalable=no, maximum-scale=1, minimum-scale=1">
-  <title>Roleplay Dice Roller</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" type="text/css" href="./styles.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Roleplay Dice Roller — D4 to D100 &amp; Custom Dice</title>
+  <meta name="description"
+    content="Roll one or two roleplaying dice from D4 to D100, or choose up to 999 custom sides, with unbiased browser randomness.">
+  <meta name="theme-color" content="rgb(178, 77, 137)">
+  <link rel="icon"
+    href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎲</text></svg>">
+  <link rel="preload" href="./fonts/comfortaa-latin-400.woff2" as="font" type="font/woff2" crossorigin>
+  <script src="./theme.js"></script>
+  <link rel="stylesheet" href="./styles.css">
   <script src="./app.js" defer></script>
   <script src="./copyright.js" defer></script>
 </head>
 
 <body>
-  <main class="footer-fixer">
-    <h1>🎲 Roleplay Dice Roller</h1>
+  <a class="skip-link" href="#main-content">Skip to dice roller</a>
 
-    <div class="source-code-link-container">
-      <a href="https://github.com/yumeangelica/roleplay-dice-roller" target="_blank" rel="noopener"
-        aria-label="View source code on GitHub (opens in new tab)">Source Code</a>
-      <a href="https://yumeangelica.github.io" target="_blank" rel="noopener"
-        aria-label="Visit my portfolio website (opens in new tab)">My Portfolio</a>
-    </div>
+  <div class="site-shell">
+    <header class="site-header">
+      <p class="eyebrow">Fair rolls for every adventure</p>
+      <h1><span aria-hidden="true">🎲</span> Roleplay Dice Roller</h1>
+      <p class="subtitle">Choose your dice, roll, and keep the table moving.</p>
 
-    <div class="game-container">
-      <!-- Counter display -->
-      <div class="counterDisplayContainer">
-        <div id="currentRoundDisplay">Round: </div>
-        <div id="totalSumDisplay">Sum of dices: </div>
+      <div class="header-actions">
+        <nav class="external-links" aria-label="Project links">
+          <a href="https://github.com/yumeangelica/roleplay-dice-roller" target="_blank"
+            rel="noopener noreferrer">Source code <span class="new-tab-hint">(opens in a new tab)</span></a>
+          <a href="https://yumeangelica.github.io" target="_blank" rel="noopener noreferrer">Portfolio <span
+              class="new-tab-hint">(opens in a new tab)</span></a>
+        </nav>
+        <button class="theme-toggle" type="button" role="switch" aria-checked="false" data-theme-toggle>
+          <span class="theme-toggle__track" aria-hidden="true"><span class="theme-toggle__thumb"></span></span>
+          <span>Dark mode</span>
+        </button>
       </div>
+    </header>
 
-      <!-- Dices -->
-      <div class="dice-display-container">
-        <div class="row">
-          <div id="firstDice" class="dice" aria-label="First dice"></div>
-          <div id="secondDice" class="dice" aria-label="Second dice"></div>
+    <main id="main-content" tabindex="-1">
+      <section class="dice-app" aria-labelledby="roller-heading">
+        <div class="panel-heading">
+          <p class="eyebrow">Ready when you are</p>
+          <h2 id="roller-heading">Build your roll</h2>
         </div>
-      </div>
 
-      <!-- Input and labels -->
-      <div class="dice-input-container">
-        <div class="row">
-          <div id="firstDiceInputContainer">
-            <label for="firstDiceSelect">Select sides for Dice 1:</label>
-            <select class="dice-select" id="firstDiceSelect" aria-label="First dice type selection">
-              <option value="4">D4</option>
-              <option value="6">D6</option>
-              <option value="8">D8</option>
-              <option value="10">D10</option>
-              <option value="12">D12</option>
-              <option value="20" selected>D20</option>
-              <option value="100">D100</option>
-              <option value="custom">Custom</option>
-            </select>
-            <input type="tel" maxlength="3" placeholder="1-999:" class="dice-input" id="firstDiceInput"
-              aria-label="First dice custom input for numbers between 1 and 999" style="display: none;">
-          </div>
-          <div id="secondDiceInputContainer">
-            <label for="secondDiceSelect" id="secondDiceSelectLabel">Select sides for Dice 2:</label>
-            <select class="dice-select" id="secondDiceSelect" aria-label="Second dice type selection">
-              <option value="4">D4</option>
-              <option value="6">D6</option>
-              <option value="8">D8</option>
-              <option value="10">D10</option>
-              <option value="12">D12</option>
-              <option value="20" selected>D20</option>
-              <option value="100">D100</option>
-              <option value="custom">Custom</option>
-            </select>
-            <input type="tel" maxlength="3" placeholder="1-999:" class="dice-input" id="secondDiceInput"
-              aria-label="Second dice custom input for numbers between 1 and 999" style="display: none;">
-          </div>
+        <div class="roll-summary" id="roll-summary" role="group" aria-label="Roll summary" hidden>
+          <p id="round-output">Ready for round 1</p>
+          <p id="sum-output" hidden></p>
         </div>
-      </div>
 
-      <!-- Buttons -->
-      <div class="dice-button-container">
-        <button id="rollButton" class="btn" aria-label="Roll dice">Roll dice</button>
-        <button id="addButton" class="btn" aria-label="Add second dice">Add dice</button>
-        <button id="subButton" class="btn" aria-label="Remove second dice">Sub dice</button>
-        <button id="resetButton" class="btn" aria-label="Reset game">Reset</button>
-      </div>
-    </div>
-  </main>
+        <div class="dice-stage" role="group" aria-label="Dice results">
+          <output class="die-output" id="first-die-result" aria-label="First die result">?</output>
+          <output class="die-output" id="second-die-result" aria-label="Second die result" hidden>?</output>
+        </div>
 
-  <footer id="copyRight" aria-label="Copyright information"></footer>
+        <form class="dice-form" id="dice-form" aria-busy="false" novalidate>
+          <div class="dice-configs">
+            <fieldset class="die-config">
+              <legend>First die</legend>
+              <label for="first-die-select">Number of sides</label>
+              <select id="first-die-select" class="field-control">
+                <option value="4">D4</option>
+                <option value="6">D6</option>
+                <option value="8">D8</option>
+                <option value="10">D10</option>
+                <option value="12">D12</option>
+                <option value="20" selected>D20</option>
+                <option value="100">D100</option>
+                <option value="custom">Custom</option>
+              </select>
+
+              <div class="custom-field" id="first-custom-field" hidden>
+                <label for="first-custom-sides">Custom sides (1–999)</label>
+                <input id="first-custom-sides" class="field-control" type="number" min="1" max="999" step="1"
+                  inputmode="numeric" aria-describedby="first-error" disabled>
+              </div>
+              <p class="field-error" id="first-error" hidden></p>
+            </fieldset>
+
+            <fieldset class="die-config" id="second-die-config" hidden>
+              <legend>Second die</legend>
+              <label for="second-die-select">Number of sides</label>
+              <select id="second-die-select" class="field-control">
+                <option value="4">D4</option>
+                <option value="6">D6</option>
+                <option value="8">D8</option>
+                <option value="10">D10</option>
+                <option value="12">D12</option>
+                <option value="20" selected>D20</option>
+                <option value="100">D100</option>
+                <option value="custom">Custom</option>
+              </select>
+
+              <div class="custom-field" id="second-custom-field" hidden>
+                <label for="second-custom-sides">Custom sides (1–999)</label>
+                <input id="second-custom-sides" class="field-control" type="number" min="1" max="999" step="1"
+                  inputmode="numeric" aria-describedby="second-error" disabled>
+              </div>
+              <p class="field-error" id="second-error" hidden></p>
+            </fieldset>
+          </div>
+
+          <div class="dice-actions">
+            <button class="button button-primary roll-button" id="roll-button" type="submit">Roll dice</button>
+            <button class="button button-secondary" id="add-die-button" type="button">Use two dice</button>
+            <button class="button button-secondary" id="remove-die-button" type="button" hidden>Remove second die</button>
+            <button class="button button-quiet" id="reset-button" type="button">Reset</button>
+          </div>
+
+          <p class="roll-status" id="roll-status" role="status" aria-live="polite">Choose a die and roll when ready.</p>
+        </form>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <small>© 2020–<span data-current-year>2026</span> yumeangelica</small>
+    </footer>
+  </div>
+
+  <dialog class="confirm-dialog" id="reset-dialog" aria-labelledby="reset-dialog-title">
+    <form method="dialog">
+      <h2 id="reset-dialog-title">Reset the dice roller?</h2>
+      <p>This clears the current dice, round count, and latest result.</p>
+      <div class="dialog-actions">
+        <button class="button button-secondary" type="submit" value="cancel" autofocus>Keep rolling</button>
+        <button class="button button-primary" type="submit" value="confirm">Reset everything</button>
+      </div>
+    </form>
+  </dialog>
 </body>
 
 </html>
