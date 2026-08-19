@@ -1,264 +1,321 @@
-/**
- * Dice Roller — 2026 Modernized
- * Vanilla JS, no frameworks
- * Note: Footer copyright is handled by copyright.js
- */
+(() => {
+  'use strict';
 
-// ---- State ----
-let showSecondDice = false;
-let roundCounter = 0;
+  const UINT32_RANGE = 0x1_0000_0000;
+  const prefersReducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-// ---- DOM refs (cached once) ----
-const $ = (id) => document.getElementById(id);
-
-let els; // populated on DOMContentLoaded
-
-// ---- Helpers ----
-
-/** Crypto-quality random integer 1…max */
-const rollRandom = (max) => {
-  const array = new Uint32Array(1);
-  crypto.getRandomValues(array);
-  return (array[0] % max) + 1;
-};
-
-/** Clear validation state from an element */
-const clearValidation = (el) => {
-  el.classList.remove('invalid');
-  const msg = el.closest('#firstDiceInputContainer, #secondDiceInputContainer')
-    ?.querySelector('.validation-msg');
-  if (msg) msg.textContent = '';
-};
-
-/** Show inline validation error */
-const showValidationError = (el, message) => {
-  el.classList.add('invalid');
-  const container = el.closest('#firstDiceInputContainer, #secondDiceInputContainer');
-  let msg = container?.querySelector('.validation-msg');
-  if (!msg && container) {
-    msg = document.createElement('span');
-    msg.className = 'validation-msg';
-    container.appendChild(msg);
-  }
-  if (msg) msg.textContent = message;
-
-  // Auto-clear after 2.5s
-  setTimeout(() => clearValidation(el), 2500);
-};
-
-/**
- * Trigger 3D tumble animation on a dice element.
- * Clears text during tumble, then shows result with a pop-in.
- */
-const animateDice = (diceEl, result) => {
-  // Remove any lingering animation classes
-  diceEl.classList.remove('rolling', 'result-pop');
-  diceEl.textContent = '';
-
-  // Force reflow so re-adding the class restarts the animation
-  void diceEl.offsetWidth;
-
-  // Start tumble
-  diceEl.classList.add('rolling');
-
-  // When tumble ends → show result with pop
-  diceEl.addEventListener('animationend', function onTumbleEnd() {
-    diceEl.removeEventListener('animationend', onTumbleEnd);
-    diceEl.classList.remove('rolling');
-
-    // Set result and do pop-in
-    diceEl.textContent = result;
-    void diceEl.offsetWidth;
-    diceEl.classList.add('result-pop');
-
-    diceEl.addEventListener('animationend', function onPopEnd() {
-      diceEl.removeEventListener('animationend', onPopEnd);
-      diceEl.classList.remove('result-pop');
-    });
-  });
-};
-
-/** Animate counter badge update */
-const animateCounter = (el) => {
-  el.classList.remove('updated');
-  void el.offsetWidth;
-  el.classList.add('updated');
-};
-
-// ---- Dice value logic ----
-
-const getDiceValue = (prefix) => {
-  const select = $(prefix + 'DiceSelect');
-  const input = $(prefix + 'DiceInput');
-
-  if (select.value === 'custom') {
-    return parseInt(input.value, 10) || 0;
-  }
-  return parseInt(select.value, 10) || 0;
-};
-
-const validateDice = (prefix) => {
-  const value = getDiceValue(prefix);
-
-  if (value >= 1 && value <= 999) return value;
-
-  // Only custom input can be invalid
-  const input = $(prefix + 'DiceInput');
-  const label = prefix === 'first' ? 'First' : 'Second';
-  showValidationError(input, `${label}: 1–999`);
-  input.focus();
-  return null;
-};
-
-// ---- Core actions ----
-
-const rollDice = () => {
-  const n1 = validateDice('first');
-  if (n1 === null) return;
-
-  let n2 = 0;
-  if (showSecondDice) {
-    n2 = validateDice('second');
-    if (n2 === null) return;
-  }
-
-  // Show round display
-  els.currentRound.style.display = 'inline';
-
-  // Generate results
-  const d1 = rollRandom(n1);
-  const d2 = showSecondDice ? rollRandom(n2) : null;
-
-  roundCounter++;
-
-  // Animate dice with tumble → result pop sequence
-  animateDice(els.firstDice, d1);
-  if (showSecondDice) {
-    animateDice(els.secondDice, d2);
-  }
-
-  // Update counters (with a slight delay to sync with dice animation)
-  setTimeout(() => {
-    els.currentRound.textContent = 'Round: ' + roundCounter;
-    animateCounter(els.currentRound);
-
-    if (showSecondDice && d2 !== null) {
-      els.totalSum.textContent = 'Sum of dices: ' + (d1 + d2);
-      animateCounter(els.totalSum);
-    }
-  }, 650);
-};
-
-const addDice = () => {
-  els.secondDice.classList.add('show');
-  $('subButton').style.display = 'inline';
-  $('secondDiceSelect').style.display = 'block';
-  $('secondDiceInput').style.display = 'none';
-  $('secondDiceInputContainer').style.display = 'flex';
-  $('addButton').style.display = 'none';
-  $('secondDiceSelectLabel').style.display = 'block';
-  els.totalSum.style.display = 'inline';
-  showSecondDice = true;
-  $('secondDiceSelect').focus();
-};
-
-const subDice = () => {
-  resetInputTwo();
-  els.secondDice.classList.remove('show');
-  $('addButton').style.display = 'inline';
-  $('subButton').style.display = 'none';
-  $('secondDiceSelect').style.display = 'none';
-  $('secondDiceInput').style.display = 'none';
-  $('secondDiceInputContainer').style.display = 'none';
-  $('secondDiceSelectLabel').style.display = 'none';
-  els.totalSum.style.display = 'none';
-  showSecondDice = false;
-  $('firstDiceSelect').focus();
-};
-
-const resetInputOne = () => {
-  $('firstDiceInput').value = '';
-  $('firstDiceSelect').value = '20';
-  $('firstDiceInput').style.display = 'none';
-  els.firstDice.textContent = '';
-};
-
-const resetInputTwo = () => {
-  $('secondDiceInput').value = '';
-  $('secondDiceSelect').value = '20';
-  $('secondDiceInput').style.display = 'none';
-  els.secondDice.textContent = '';
-};
-
-const resetAll = () => {
-  if (roundCounter > 0 && !confirm('Are you sure you want to reset?')) return;
-
-  roundCounter = 0;
-  resetInputOne();
-  resetInputTwo();
-
-  if (showSecondDice) subDice();
-
-  els.currentRound.style.display = 'none';
-  els.currentRound.textContent = '';
-  els.totalSum.style.display = 'none';
-  els.totalSum.textContent = '';
-  els.firstDice.classList.remove('rolling', 'result-pop');
-  els.secondDice.classList.remove('rolling', 'result-pop');
-  $('firstDiceSelect').focus();
-};
-
-// ---- Select change handlers ----
-
-const handleSelectChange = (prefix) => {
-  const select = $(prefix + 'DiceSelect');
-  const input = $(prefix + 'DiceInput');
-
-  clearValidation(select);
-  clearValidation(input);
-
-  if (select.value === 'custom') {
-    input.style.display = 'block';
-    input.focus();
-  } else {
-    input.style.display = 'none';
-    input.value = '';
-  }
-};
-
-// ---- Init ----
-
-document.addEventListener('DOMContentLoaded', () => {
-  // Cache elements
-  els = {
-    firstDice: $('firstDice'),
-    secondDice: $('secondDice'),
-    currentRound: $('currentRoundDisplay'),
-    totalSum: $('totalSumDisplay'),
+  const elements = {
+    form: /** @type {HTMLFormElement} */ (document.getElementById('dice-form')),
+    firstResult: /** @type {HTMLOutputElement} */ (document.getElementById('first-die-result')),
+    secondResult: /** @type {HTMLOutputElement} */ (document.getElementById('second-die-result')),
+    rollSummary: /** @type {HTMLDivElement} */ (document.getElementById('roll-summary')),
+    roundOutput: /** @type {HTMLParagraphElement} */ (document.getElementById('round-output')),
+    sumOutput: /** @type {HTMLParagraphElement} */ (document.getElementById('sum-output')),
+    firstSelect: /** @type {HTMLSelectElement} */ (document.getElementById('first-die-select')),
+    firstCustomField: /** @type {HTMLDivElement} */ (document.getElementById('first-custom-field')),
+    firstCustom: /** @type {HTMLInputElement} */ (document.getElementById('first-custom-sides')),
+    firstError: /** @type {HTMLParagraphElement} */ (document.getElementById('first-error')),
+    secondConfig: /** @type {HTMLFieldSetElement} */ (document.getElementById('second-die-config')),
+    secondSelect: /** @type {HTMLSelectElement} */ (document.getElementById('second-die-select')),
+    secondCustomField: /** @type {HTMLDivElement} */ (document.getElementById('second-custom-field')),
+    secondCustom: /** @type {HTMLInputElement} */ (document.getElementById('second-custom-sides')),
+    secondError: /** @type {HTMLParagraphElement} */ (document.getElementById('second-error')),
+    rollButton: /** @type {HTMLButtonElement} */ (document.getElementById('roll-button')),
+    addButton: /** @type {HTMLButtonElement} */ (document.getElementById('add-die-button')),
+    removeButton: /** @type {HTMLButtonElement} */ (document.getElementById('remove-die-button')),
+    resetButton: /** @type {HTMLButtonElement} */ (document.getElementById('reset-button')),
+    status: /** @type {HTMLParagraphElement} */ (document.getElementById('roll-status')),
+    resetDialog: /** @type {HTMLDialogElement} */ (document.getElementById('reset-dialog')),
   };
 
-  // Clear initial state
-  els.firstDice.textContent = '';
-  els.secondDice.textContent = '';
-  $('firstDiceInput').value = '';
-  $('secondDiceInput').value = '';
-  $('firstDiceSelect').focus();
+  /**
+   * @typedef {'first' | 'second'} DiePrefix
+   * @typedef {{ round: number, firstResult: number, secondResult: number | null }} RollResult
+   */
 
-  // Button listeners
-  $('rollButton').addEventListener('click', rollDice);
-  $('addButton').addEventListener('click', addDice);
-  $('subButton').addEventListener('click', subDice);
-  $('resetButton').addEventListener('click', resetAll);
+  /** @type {{ useSecondDie: boolean, round: number, rolling: boolean, revealTimeout: number | null, statusTimeout: number | null }} */
+  const state = {
+    useSecondDie: false,
+    round: 0,
+    rolling: false,
+    revealTimeout: null,
+    statusTimeout: null,
+  };
 
-  // Select change listeners
-  $('firstDiceSelect').addEventListener('change', () => handleSelectChange('first'));
-  $('secondDiceSelect').addEventListener('change', () => handleSelectChange('second'));
+  /** @param {string} message */
+  const announce = (message) => {
+    if (state.statusTimeout !== null) window.clearTimeout(state.statusTimeout);
+    elements.status.textContent = '';
+    state.statusTimeout = window.setTimeout(() => {
+      elements.status.textContent = message;
+    }, 10);
+  };
 
-  // Clear validation on input
-  $('firstDiceInput').addEventListener('input', (e) => clearValidation(e.target));
-  $('secondDiceInput').addEventListener('input', (e) => clearValidation(e.target));
+  /** @param {number} maximum */
+  const randomInteger = (maximum) => {
+    const limit = Math.floor(UINT32_RANGE / maximum) * maximum;
+    const values = new Uint32Array(1);
+    let randomValue;
 
-  // Enter key → roll
-  $('firstDiceInput').addEventListener('keyup', (e) => { if (e.key === 'Enter') rollDice(); });
-  $('secondDiceInput').addEventListener('keyup', (e) => { if (e.key === 'Enter') rollDice(); });
-});
+    do {
+      crypto.getRandomValues(values);
+      [randomValue] = values;
+    } while (randomValue >= limit);
+
+    return (randomValue % maximum) + 1;
+  };
+
+  /** @param {DiePrefix} prefix */
+  const dieElements = (prefix) => ({
+    select: prefix === 'first' ? elements.firstSelect : elements.secondSelect,
+    customField: prefix === 'first' ? elements.firstCustomField : elements.secondCustomField,
+    customInput: prefix === 'first' ? elements.firstCustom : elements.secondCustom,
+    error: prefix === 'first' ? elements.firstError : elements.secondError,
+    result: prefix === 'first' ? elements.firstResult : elements.secondResult,
+    label: prefix === 'first' ? 'First die' : 'Second die',
+  });
+
+  /** @param {DiePrefix} prefix */
+  const clearError = (prefix) => {
+    const { customInput, error } = dieElements(prefix);
+    customInput.setAttribute('aria-invalid', 'false');
+    error.textContent = '';
+    error.hidden = true;
+  };
+
+  /**
+   * @param {DiePrefix} prefix
+   * @param {string} message
+   */
+  const showError = (prefix, message) => {
+    const { customInput, error } = dieElements(prefix);
+    customInput.setAttribute('aria-invalid', 'true');
+    error.textContent = message;
+    error.hidden = false;
+    customInput.focus();
+  };
+
+  /** @param {DiePrefix} prefix */
+  const getSides = (prefix) => {
+    const { select, customInput, label } = dieElements(prefix);
+    clearError(prefix);
+
+    if (select.value !== 'custom') return Number(select.value);
+
+    const sides = Number(customInput.value);
+    if (!Number.isInteger(sides) || sides < 1 || sides > 999) {
+      showError(prefix, `${label} needs a whole number from 1 to 999.`);
+      return null;
+    }
+
+    return sides;
+  };
+
+  const clearDisplayedRoll = () => {
+    elements.firstResult.textContent = '?';
+    elements.secondResult.textContent = '?';
+    elements.firstResult.classList.remove('rolling', 'revealed');
+    elements.secondResult.classList.remove('rolling', 'revealed');
+    elements.rollSummary.hidden = state.round === 0;
+    elements.roundOutput.textContent = `Ready for round ${state.round + 1}`;
+    elements.sumOutput.textContent = '';
+    elements.sumOutput.hidden = true;
+  };
+
+  /**
+   * @param {DiePrefix} prefix
+   * @param {boolean} [shouldFocus]
+   */
+  const syncCustomField = (prefix, shouldFocus = false) => {
+    const { select, customField, customInput } = dieElements(prefix);
+    const isCustom = select.value === 'custom';
+    customField.hidden = !isCustom;
+    customInput.disabled = state.rolling || !isCustom || (prefix === 'second' && !state.useSecondDie);
+    clearError(prefix);
+    clearDisplayedRoll();
+    if (isCustom && shouldFocus) customInput.focus();
+  };
+
+  const syncControls = () => {
+    elements.secondConfig.hidden = !state.useSecondDie;
+    elements.secondConfig.disabled = !state.useSecondDie;
+    elements.secondResult.hidden = !state.useSecondDie;
+    elements.addButton.hidden = state.useSecondDie;
+    elements.removeButton.hidden = !state.useSecondDie;
+
+    elements.rollButton.disabled = state.rolling;
+    elements.addButton.disabled = state.rolling;
+    elements.removeButton.disabled = state.rolling;
+    elements.resetButton.disabled = state.rolling;
+    elements.firstSelect.disabled = state.rolling;
+    elements.secondSelect.disabled = state.rolling || !state.useSecondDie;
+    elements.firstCustom.disabled = state.rolling || elements.firstSelect.value !== 'custom';
+    elements.secondCustom.disabled = state.rolling || !state.useSecondDie || elements.secondSelect.value !== 'custom';
+  };
+
+  /**
+   * @param {HTMLOutputElement} output
+   * @param {number} value
+   */
+  const setResult = (output, value) => {
+    output.classList.remove('rolling', 'revealed');
+    output.textContent = String(value);
+    void output.offsetWidth;
+    output.classList.add('revealed');
+  };
+
+  /** @param {RollResult} result */
+  const revealRoll = ({ round, firstResult, secondResult }) => {
+    setResult(elements.firstResult, firstResult);
+    elements.roundOutput.textContent = `Round ${round}`;
+
+    let message = `Round ${round}: first die rolled ${firstResult}.`;
+    if (secondResult !== null) {
+      setResult(elements.secondResult, secondResult);
+      const sum = firstResult + secondResult;
+      elements.sumOutput.textContent = `Total ${sum}`;
+      elements.sumOutput.hidden = false;
+      message = `Round ${round}: first die rolled ${firstResult}, second die rolled ${secondResult}, total ${sum}.`;
+    } else {
+      elements.sumOutput.textContent = '';
+      elements.sumOutput.hidden = true;
+    }
+
+    state.rolling = false;
+    state.revealTimeout = null;
+    elements.form.setAttribute('aria-busy', 'false');
+    syncControls();
+    announce(message);
+  };
+
+  /** @param {SubmitEvent} event */
+  const rollDice = (event) => {
+    event.preventDefault();
+    if (state.rolling) return;
+
+    const firstSides = getSides('first');
+    if (firstSides === null) {
+      announce('Correct the first die and try again.');
+      return;
+    }
+
+    const secondSides = state.useSecondDie ? getSides('second') : null;
+    if (state.useSecondDie && secondSides === null) {
+      announce('Correct the second die and try again.');
+      return;
+    }
+
+    let firstResult;
+    let secondResult = null;
+    try {
+      firstResult = randomInteger(firstSides);
+      if (secondSides !== null) secondResult = randomInteger(secondSides);
+    } catch {
+      announce('Secure browser randomness is unavailable. Try a current browser.');
+      return;
+    }
+
+    state.round += 1;
+    state.rolling = true;
+    elements.form.setAttribute('aria-busy', 'true');
+    elements.rollSummary.hidden = false;
+    elements.roundOutput.textContent = `Round ${state.round} rolling…`;
+    syncControls();
+    elements.firstResult.textContent = '…';
+    elements.firstResult.classList.add('rolling');
+    if (state.useSecondDie) {
+      elements.secondResult.textContent = '…';
+      elements.secondResult.classList.add('rolling');
+    }
+    state.revealTimeout = window.setTimeout(() => {
+      revealRoll({ round: state.round, firstResult, secondResult });
+    }, prefersReducedMotion() ? 0 : 350);
+  };
+
+  const addSecondDie = () => {
+    state.useSecondDie = true;
+    clearDisplayedRoll();
+    syncControls();
+    elements.secondSelect.focus();
+    announce('Second die added.');
+  };
+
+  const removeSecondDie = () => {
+    state.useSecondDie = false;
+    elements.secondSelect.value = '20';
+    elements.secondCustom.value = '';
+    syncCustomField('second');
+    syncControls();
+    elements.firstSelect.focus();
+    announce('Second die removed.');
+  };
+
+  const resetAll = () => {
+    if (state.revealTimeout !== null) window.clearTimeout(state.revealTimeout);
+    state.revealTimeout = null;
+    state.rolling = false;
+    elements.form.setAttribute('aria-busy', 'false');
+    state.round = 0;
+    state.useSecondDie = false;
+
+    elements.firstSelect.value = '20';
+    elements.secondSelect.value = '20';
+    elements.firstCustom.value = '';
+    elements.secondCustom.value = '';
+
+    syncCustomField('first');
+    syncCustomField('second');
+    syncControls();
+    announce('Dice roller reset.');
+  };
+
+  const requestReset = () => {
+    if (state.round === 0) {
+      resetAll();
+      return;
+    }
+
+    if (typeof elements.resetDialog.showModal === 'function') {
+      elements.resetDialog.returnValue = 'cancel';
+      elements.resetDialog.showModal();
+    } else {
+      resetAll();
+    }
+  };
+
+  elements.form.addEventListener('submit', rollDice);
+  elements.addButton.addEventListener('click', addSecondDie);
+  elements.removeButton.addEventListener('click', removeSecondDie);
+  elements.resetButton.addEventListener('click', requestReset);
+
+  elements.firstSelect.addEventListener('change', () => {
+    syncCustomField('first', true);
+    announce('First die updated.');
+  });
+  elements.secondSelect.addEventListener('change', () => {
+    syncCustomField('second', true);
+    announce('Second die updated.');
+  });
+  elements.firstCustom.addEventListener('input', () => {
+    clearError('first');
+    clearDisplayedRoll();
+  });
+  elements.secondCustom.addEventListener('input', () => {
+    clearError('second');
+    clearDisplayedRoll();
+  });
+
+  elements.resetDialog.addEventListener('close', () => {
+    if (elements.resetDialog.returnValue === 'confirm') resetAll();
+    window.setTimeout(() => elements.resetButton.focus(), 0);
+  });
+
+  window.addEventListener('beforeunload', () => {
+    if (state.revealTimeout !== null) window.clearTimeout(state.revealTimeout);
+    if (state.statusTimeout !== null) window.clearTimeout(state.statusTimeout);
+  });
+
+  syncCustomField('first');
+  syncCustomField('second');
+  syncControls();
+})();
